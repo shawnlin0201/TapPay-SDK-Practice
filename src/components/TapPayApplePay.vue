@@ -1,17 +1,19 @@
 <script setup>
-import {onMounted} from 'vue'
+import {ref, onMounted} from 'vue'
 import axios from "axios";
 import config from "@/config/paymentInfo.js";
-
+const payButtonClass = ref(null)
 onMounted(() => {
-  TPDirect.setupSDK(config.app_id, config.app_key, 'sandbox')
-  TPDirect.paymentRequestApi.setupApplePay({
-    merchantIdentifier: 'APMEzLyqKHy9ikwet94T',
-    countryCode: 'TW',
-  })
+  if (TPDirect.paymentRequestApi.checkAvailability()) {
+    TPDirect.setupSDK(config.app_id, config.app_key, 'sandbox')
+    TPDirect.paymentRequestApi.setupApplePay({
+      merchantIdentifier: 'APMEzLyqKHy9ikwet94T',
+      countryCode: 'TW',
+    })
+  }
 })
 
-const submit = () => {
+const checkProduct = () => {
   const paymentRequest = {
     supportedNetworks: ['AMEX', 'JCB', 'MASTERCARD', 'VISA'],
     supportedMethods: ['apple_pay'],
@@ -60,14 +62,30 @@ const submit = () => {
   TPDirect.paymentRequestApi.setupPaymentRequest(paymentRequest, function (result) {
     if (!result.browserSupportPaymentRequest) {
       console.log('瀏覽器不支援 PaymentRequest')
+      payButtonClass.value = 'buy'
       return
     }
     if (result.canMakePaymentWithActiveCard === true) {
       console.log('該裝置有支援的卡片可以付款')
+      payButtonClass.value = 'buy'
     } else {
       console.log('該裝置沒有支援的卡片可以付款')
+      payButtonClass.value = 'set-up'
     }
   })
+}
+
+const submit = () => {
+  TPDirect.paymentRequestApi.getPrime(function(result) {
+    console.log('paymentRequestApi.getPrime result', result)
+    if (result.status !== 0) {
+      console.error('getPrime failed: ' + result.msg)
+      return
+    }
+    var prime = result.prime
+    console.log('prime', prime)
+  })
+
 }
 
 
@@ -75,15 +93,9 @@ const submit = () => {
 
 <template lang="pug">
   div
-    button(@click='submit')
-      | Pay With ApplePay
+    button(@click='checkProduct')
+      | Check Item
+    div#apply-pay(:class="payButtonClass" @click="submit")
+      | Pay With ApplePay {{ payButtonClass }}
 </template>
-<style scoped>
-.tpfield {
-  height: 40px;
-  width: 300px;
-  border: 1px solid gray;
-  margin: 5px 0;
-  padding: 5px;
-}
-</style>
+<style scoped></style>
