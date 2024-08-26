@@ -3,6 +3,7 @@ import {ref, onMounted} from 'vue'
 import axios from "axios";
 import config from "@/config/paymentInfo.js";
 const payButtonClass = ref(null)
+const command = ref(null)
 onMounted(() => {
   if (TPDirect.paymentRequestApi.checkAvailability()) {
     TPDirect.setupSDK(config.app_id, config.app_key, 'sandbox')
@@ -82,7 +83,28 @@ const submit = () => {
       console.error('getPrime failed: ' + result.msg)
       return
     }
-    var prime = result.prime
+    const prime = result.prime
+
+    command.value = `
+    curl -X POST https://sandbox.tappaysdk.com/tpc/payment/pay-by-prime \\
+    -H 'content-type: application/json' \\
+    -H 'x-api-key: partner_ddnaYdNtwqPdK7r1Keu8lACTy1Eousn52yhbROWoamzaAbZ0pwsq1Mqn' \\
+    -d '{
+        "partner_key": "partner_ddnaYdNtwqPdK7r1Keu8lACTy1Eousn52yhbROWoamzaAbZ0pwsq1Mqn",
+        "prime": "${result.prime}",
+        "amount": "${parseInt(result.total_amount)}",
+        "merchant_id": "APMEzLyqKHy9ikwet94T",
+        "details": "Some item",
+        "cardholder": {
+            "phone_number": "0912345678",
+            "name": "Shawn",
+            "email": "test@example.com",
+            "zip_code": "123",
+            "address": "台北市xxx街xx號",
+            "national_id": "A123456789"
+        }
+    }'`.replace(/                /g, '')
+
     console.log('prime', prime)
   })
 
@@ -97,5 +119,6 @@ const submit = () => {
       | Check Item
     div#apply-pay(:class="payButtonClass" @click="submit")
       | Pay With ApplePay {{ payButtonClass }}
+    <pre>{{ command }}</pre>
 </template>
 <style scoped></style>
