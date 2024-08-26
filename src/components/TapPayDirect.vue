@@ -4,9 +4,6 @@ import axios from "axios";
 import config from "@/config/paymentInfo.js";
 
 onMounted(() => {
-  console.log('auto',import.meta.env.VITE_APP_ID)
-  console.log('config.app_id', config.app_id)
-  console.log('config.app_key', config.app_key)
   TPDirect.setupSDK(config.app_id, config.app_key, 'sandbox')
   TPDirect.card.setup({
     fields: {
@@ -50,15 +47,16 @@ const submit = () => {
       return
     }
     console.log('get prime 成功，prime: ' + result.card.prime)
-    axios.post('http://localhost:3000/direct', {
-      prime: result.card.prime,
-    }, {
-      headers: {
-        'Content-type': 'application/json; charset=UTF-8'
-      }
-    }).then(res => {
-      console.log(res)
-    })
+    // todo: localhost server 方案
+    // axios.post('http://localhost:3000/direct', {
+    //   prime: result.card.prime,
+    // }, {
+    //   headers: {
+    //     'Content-type': 'application/json; charset=UTF-8'
+    //   }
+    // }).then(res => {
+    //   console.log(res)
+    // })
   })
 }
 
