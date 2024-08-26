@@ -13,7 +13,7 @@ onMounted(() => {
 
 const submit = () => {
   const paymentRequest = {
-    supportedNetworks: ['VISA'],
+    supportedNetworks: ['AMEX', 'JCB', 'MASTERCARD', 'VISA'],
     supportedMethods: ['apple_pay'],
     displayItems: [{
       label: 'TapPay - iPhone8',
